@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('공고 목록')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: nav('notices')}"></header>
+
+<main class="container">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+
+    <h1>창업 지원사업 공고</h1>
+
+    <!-- 검색 / 필터 -->
+    <form th:action="@{/notices}" method="get" class="search-box">
+        <input type="text" name="keyword" th:value="${keyword}" placeholder="공고명 또는 기관명 검색">
+
+        <select name="orgType">
+            <option value="">기관 전체</option>
+            <option th:each="t : ${orgTypes}" th:value="${t}" th:text="${t.label}"
+                    th:selected="${orgType == t}"></option>
+        </select>
+
+        <select name="category">
+            <option value="">분야 전체</option>
+            <option th:each="c : ${categories}" th:value="${c}" th:text="${c.label}"
+                    th:selected="${category == c}"></option>
+        </select>
+
+        <select name="sort">
+            <option value="deadline" th:selected="${sort == 'deadline'}">마감임박순</option>
+            <option value="latest" th:selected="${sort == 'latest'}">최신등록순</option>
+            <option value="views" th:selected="${sort == 'views'}">조회순</option>
+        </select>
+
+        <label class="check">
+            <input type="checkbox" name="includeClosed" value="true" th:checked="${includeClosed}"> 마감 포함
+        </label>
+
+        <button type="submit" class="btn">검색</button>
+        <a th:href="@{/notices}" class="btn btn-ghost">초기화</a>
+    </form>
+
+    <p class="count">총 <b th:text="${result.totalElements()}">0</b>건</p>
+
+    <!-- 공고 카드 목록 -->
+    <div th:if="${result.content().isEmpty()}" class="empty">조건에 맞는 공고가 없습니다.</div>
+
+    <article th:each="n : ${result.content()}" class="card"
+             th:classappend="${n.status() == 'CLOSED'} ? 'closed'">
+        <div class="badges">
+            <span class="badge badge-line" th:text="${n.orgType()}">민간</span>
+            <span class="badge badge-cat" th:text="${n.category()}">분야</span>
+            <span class="badge"
+                  th:classappend="${n.dDay() < 0} ? 'badge-gray' : (${n.dDay() <= 3} ? 'badge-red' : 'badge-dark')"
+                  th:text="${n.dDayLabel()}">D-3</span>
+        </div>
+
+        <h2><a th:href="@{/notices/{id}(id=${n.id()})}" th:text="${n.title()}">공고 제목</a></h2>
+
+        <!-- 원래 사이트에서는 목록에 안 보이던 핵심 정보 -->
+        <dl class="info">
+            <div><dt>대상</dt><dd th:text="${n.target() ?: '-'}">-</dd></div>
+            <div><dt>지원</dt><dd th:text="${n.supportAmount() ?: '-'}">-</dd></div>
+            <div><dt>마감</dt><dd th:text="${n.deadline()}">-</dd></div>
+            <div><dt>기관</dt><dd th:text="${n.organization()}">-</dd></div>
+        </dl>
+
+        <div class="card-side">
+            <span class="views" th:text="'조회 ' + ${n.viewCount()}">조회 0</span>
+
+            <span th:if="${appliedNoticeIds.contains(n.id())}" class="tag-added">✓ 지원 관리중</span>
+
+            <form th:unless="${appliedNoticeIds.contains(n.id()) or n.status() == 'CLOSED'}"
+                  th:action="@{/applications}" method="post">
+                <input type="hidden" name="noticeId" th:value="${n.id()}">
+                <input type="hidden" name="returnUrl" value="/notices">
+                <button type="submit" class="btn btn-sm btn-outline">+ 지원 관리에 추가</button>
+            </form>
+        </div>
+    </article>
+
+    <!-- 페이지 번호 -->
+    <nav class="paging" th:if="${result.totalPages() > 1}">
+        <a th:each="p : ${#numbers.sequence(1, result.totalPages())}"
+           th:href="@{/notices(keyword=${keyword}, orgType=${orgType}, category=${category},
+                     includeClosed=${includeClosed}, sort=${sort}, page=${p})}"
+           th:text="${p}" th:classappend="${p == result.page()} ? 'on'">1</a>
+    </nav>
+</main>
+</body>
+</html>

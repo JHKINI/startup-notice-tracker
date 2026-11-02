@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head(${notice.title()})}"></head>
+<body>
+<header th:replace="~{fragments/layout :: nav('notices')}"></header>
+
+<main class="container narrow">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+
+    <a th:href="@{/notices}" class="back">← 목록으로</a>
+
+    <div class="badges">
+        <span class="badge badge-line" th:text="${notice.orgType()}"></span>
+        <span class="badge badge-cat" th:text="${notice.category()}"></span>
+        <span class="badge" th:classappend="${notice.status() == 'CLOSED'} ? 'badge-gray' : 'badge-dark'"
+              th:text="${notice.status() == 'CLOSED'} ? '마감' : '접수중'"></span>
+    </div>
+
+    <h1 th:text="${notice.title()}">공고 제목</h1>
+    <p class="meta">
+        <span th:text="${notice.organization()}">기관</span> ·
+        조회 <span th:text="${notice.viewCount()}">0</span> ·
+        등록 <span th:text="${#temporals.format(notice.createdAt(), 'yyyy-MM-dd')}">날짜</span>
+    </p>
+
+    <!-- 내 지원 상태 박스 -->
+    <section class="my-apply">
+        <div th:if="${myApplication != null}">
+            내 지원 상태: <b class="status" th:text="${myApplication.statusLabel()}">관심</b>
+            <a th:href="@{/applications}" class="btn btn-sm btn-outline">지원 관리로 이동</a>
+        </div>
+        <form th:if="${myApplication == null and notice.status() == 'OPEN'}"
+              th:action="@{/applications}" method="post">
+            <input type="hidden" name="noticeId" th:value="${notice.id()}">
+            <input type="hidden" name="returnUrl" th:value="'/notices/' + ${notice.id()}">
+            <button type="submit" class="btn">+ 지원 관리에 추가</button>
+        </form>
+        <p th:if="${myApplication == null and notice.status() == 'CLOSED'}" class="muted">
+            마감된 공고는 지원 관리에 추가할 수 없습니다.
+        </p>
+    </section>
+
+    <table class="detail-table">
+        <tr><th>지원 대상</th><td th:text="${notice.target() ?: '-'}"></td></tr>
+        <tr><th>지역</th><td th:text="${notice.region() ?: '-'}"></td></tr>
+        <tr><th>지원 규모</th><td th:text="${notice.supportAmount() ?: '-'}"></td></tr>
+        <tr><th>접수 기간</th><td th:text="${notice.startDate()} + ' ~ ' + ${notice.deadline()}"></td></tr>
+        <tr><th>신청 링크</th>
+            <td>
+                <a th:if="${notice.applyUrl()}" th:href="${notice.applyUrl()}" th:text="${notice.applyUrl()}"
+                   target="_blank" rel="noopener"></a>
+                <span th:unless="${notice.applyUrl()}">-</span>
+            </td>
+        </tr>
+    </table>
+
+    <div class="content" th:text="${notice.content()}">상세 내용</div>
+
+    <div class="actions">
+        <a th:href="@{/notices/{id}/edit(id=${notice.id()})}" class="btn btn-outline">수정</a>
+        <form th:action="@{/notices/{id}/delete(id=${notice.id()})}" method="post"
+              onsubmit="return confirm('이 공고를 삭제할까요?');">
+            <button type="submit" class="btn btn-danger">삭제</button>
+        </form>
+    </div>
+</main>
+</body>
+</html>

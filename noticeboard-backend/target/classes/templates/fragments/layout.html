@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+
+<!-- 공통 <head> -->
+<head th:fragment="head(title)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${title} + ' | 창업 지원사업 공고'">창업 지원사업 공고</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+
+<!-- 상단 메뉴 -->
+<header th:fragment="nav(active)" class="nav">
+    <div class="nav-inner">
+        <a th:href="@{/notices}" class="logo">창업공고 <span>Tracker</span></a>
+        <nav>
+            <a th:href="@{/notices}" th:classappend="${active == 'notices'} ? 'on'">공고 목록</a>
+            <a th:href="@{/applications}" th:classappend="${active == 'applications'} ? 'on'">내 지원 관리</a>
+            <a th:href="@{/notices/new}" class="btn btn-sm">+ 공고 등록</a>
+        </nav>
+    </div>
+</header>
+
+<!-- 성공 / 실패 메시지 -->
+<div th:fragment="flash">
+    <div th:if="${message}" class="alert alert-ok" th:text="${message}"></div>
+    <div th:if="${error}" class="alert alert-err" th:text="${error}"></div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head('내 지원 관리')}"></head>
+<body>
+<header th:replace="~{fragments/layout :: nav('applications')}"></header>
+
+<main class="container wide">
+    <div th:replace="~{fragments/layout :: flash}"></div>
+
+    <h1>내 지원 관리</h1>
+    <p class="muted">관심 공고를 찜만 하지 않고, 준비 → 제출 → 결과까지 단계별로 관리합니다.
+        마감 3일 이내인데 아직 제출하지 않은 공고는 빨간색으로 표시됩니다.</p>
+
+    <div class="board">
+        <!-- 상태별 컬럼 (관심 / 준비중 / 제출완료 / 합격 / 불합격) -->
+        <section th:each="entry : ${board}" class="column">
+            <h2>
+                <span th:text="${entry.key.label}">관심</span>
+                <span class="num" th:text="${entry.value.size()}">0</span>
+            </h2>
+
+            <p th:if="${entry.value.isEmpty()}" class="empty-col">비어 있음</p>
+
+            <article th:each="a : ${entry.value}" class="apply-card"
+                     th:classappend="${a.urgent()} ? 'urgent' : (${a.missed()} ? 'missed' : '')">
+
+                <div class="apply-top">
+                    <span class="badge"
+                          th:classappend="${a.urgent()} ? 'badge-red' : 'badge-dark'"
+                          th:text="${a.dDayLabel()}">D-3</span>
+                    <span th:if="${a.urgent()}" class="warn">마감 임박 · 미제출</span>
+                    <span th:if="${a.missed()}" class="warn gray">마감됨 · 미제출</span>
+                </div>
+
+                <a th:href="@{/notices/{id}(id=${a.noticeId()})}" class="apply-title"
+                   th:text="${a.noticeTitle()}">공고 제목</a>
+                <p class="apply-org" th:text="${a.organization()}">기관</p>
+
+                <!-- 상태 변경: 바꿀 수 있는 상태만 보여줌 -->
+                <form th:action="@{/applications/{id}/status(id=${a.id()})}" method="post" class="inline">
+                    <select name="status" onchange="this.form.submit()">
+                        <option th:each="s : ${statuses}"
+                                th:if="${a.status().canChangeTo(s)}"
+                                th:value="${s}" th:text="${s.label}"
+                                th:selected="${s == a.status()}"></option>
+                    </select>
+                </form>
+
+                <!-- 메모 -->
+                <form th:action="@{/applications/{id}/memo(id=${a.id()})}" method="post" class="memo">
+                    <textarea name="memo" rows="2" maxlength="500" placeholder="메모 (예: 사업계획서 초안 작성)"
+                              th:text="${a.memo()}"></textarea>
+                    <button type="submit" class="btn btn-sm btn-outline">메모 저장</button>
+                </form>
+
+                <form th:action="@{/applications/{id}/delete(id=${a.id()})}" method="post"
+                      onsubmit="return confirm('지원 관리에서 삭제할까요?');">
+                    <button type="submit" class="link-danger">삭제</button>
+                </form>
+            </article>
+        </section>
+    </div>
+</main>
+</body>
+</html>

@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragments/layout :: head((${noticeId == null} ? '공고 등록' : '공고 수정'))}"></head>
+<body>
+<header th:replace="~{fragments/layout :: nav('notices')}"></header>
+
+<main class="container narrow">
+    <h1 th:text="${noticeId == null} ? '공고 등록' : '공고 수정'">공고 등록</h1>
+
+    <!-- noticeId가 없으면 등록(POST /notices), 있으면 수정(POST /notices/{id}/edit) -->
+    <form th:object="${form}" method="post" class="form"
+          th:action="${noticeId == null} ? @{/notices} : @{/notices/{id}/edit(id=${noticeId})}">
+
+        <label>제목 *
+            <input type="text" th:field="*{title}">
+            <small class="err" th:errors="*{title}"></small>
+        </label>
+
+        <label>기관명 *
+            <input type="text" th:field="*{organization}">
+            <small class="err" th:errors="*{organization}"></small>
+        </label>
+
+        <div class="row">
+            <label>기관 구분 *
+                <select th:field="*{orgType}">
+                    <option value="">선택</option>
+                    <option th:each="t : ${orgTypes}" th:value="${t}" th:text="${t.label}"></option>
+                </select>
+                <small class="err" th:errors="*{orgType}"></small>
+            </label>
+            <label>지원 분야 *
+                <select th:field="*{category}">
+                    <option value="">선택</option>
+                    <option th:each="c : ${categories}" th:value="${c}" th:text="${c.label}"></option>
+                </select>
+                <small class="err" th:errors="*{category}"></small>
+            </label>
+        </div>
+
+        <div class="row">
+            <label>지원 대상
+                <input type="text" th:field="*{target}" placeholder="예: 대학생, 예비창업자">
+            </label>
+            <label>지역
+                <input type="text" th:field="*{region}" placeholder="예: 전국, 서울">
+            </label>
+        </div>
+
+        <label>지원 규모
+            <input type="text" th:field="*{supportAmount}" placeholder="예: 최대 1,000만원">
+        </label>
+
+        <div class="row">
+            <label>접수 시작일 *
+                <input type="date" th:field="*{startDate}">
+                <small class="err" th:errors="*{startDate}"></small>
+            </label>
+            <label>마감일 *
+                <input type="date" th:field="*{deadline}">
+                <small class="err" th:errors="*{deadline}"></small>
+            </label>
+        </div>
+
+        <label>신청 링크
+            <input type="url" th:field="*{applyUrl}" placeholder="https://">
+        </label>
+
+        <label>상세 내용
+            <textarea th:field="*{content}" rows="8"></textarea>
+        </label>
+
+        <div class="actions">
+            <a th:href="${noticeId == null} ? @{/notices} : @{/notices/{id}(id=${noticeId})}"
+               class="btn btn-ghost">취소</a>
+            <button type="submit" class="btn" th:text="${noticeId == null} ? '등록' : '수정 완료'">등록</button>
+        </div>
+    </form>
+</main>
+</body>
+</html>

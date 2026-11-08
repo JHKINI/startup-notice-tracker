@@ -25,15 +25,18 @@ public enum ApplyStatus {
      * - 합격 / 불합격에서는 "제출완료"로만 되돌릴 수 있음 (결과 정정용)
      */
     public boolean canChangeTo(ApplyStatus next) {
-        if (this == next) {
-            return true;
-        }
-        if (next == PASSED || next == FAILED) {
-            return this == SUBMITTED || this == PASSED || this == FAILED;
-        }
-        if (this == PASSED || this == FAILED) {
-            return next == SUBMITTED;
-        }
+    if (this == next) {
         return true;
     }
+
+    if (this == PASSED || this == FAILED) {
+        return next == SUBMITTED;
+    }
+
+    if (next == PASSED || next == FAILED) {
+        return this == SUBMITTED;
+    }
+
+    return true;
+}
 }

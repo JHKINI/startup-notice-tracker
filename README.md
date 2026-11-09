@@ -149,13 +149,23 @@ com.myspring.noticeboard
 ## ▶ 실행 방법
 
 1. MySQL 8 실행 (DB는 첫 실행 때 `noticeboard_db`로 자동 생성)
-2. `src/main/resources/application.yaml`에서 DB 계정 정보 수정
-   ```yaml
-   spring:
-     datasource:
-       username: root
-       password: 본인 비밀번호
+2. DB 계정 정보를 환경변수로 설정 (비밀번호는 코드에 직접 적지 않습니다)
+
+   | 환경변수 | 설명 | 기본값 |
+   |---|---|---|
+   | `DB_PASSWORD` | DB 비밀번호 | 없음 (필수) |
+   | `DB_USERNAME` | DB 계정 | `root` |
+   | `DB_URL` | JDBC URL | `jdbc:mysql://localhost:3306/noticeboard_db?...` |
+
+   ```bash
+   # macOS / Linux / Git Bash
+   export DB_PASSWORD=본인비밀번호
    ```
+   ```powershell
+   # Windows PowerShell
+   $env:DB_PASSWORD="본인비밀번호"
+   ```
+   > IntelliJ에서 실행할 경우 Run Configuration → Environment variables에 `DB_PASSWORD=본인비밀번호` 추가
 3. 실행
    ```bash
    ./mvnw spring-boot:run
